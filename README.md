@@ -1,146 +1,133 @@
-# kore-n8n
+<p align="center">
+  <img src="assets/logo-kore-n8n.svg" alt="kore-n8n logo" width="200"/>
+</p>
 
-Self-hosted [n8n](https://n8n.io) instance running in Docker, exposed via a Traefik v2 reverse proxy with automatic Let's Encrypt TLS.
+# KORE N8N
 
-This repository is a clean, reusable foundation · bring your own Traefik setup and domain, configure `.env`, and you're live.
+> Socle n8n self-hosted — Docker, Traefik, Let's Encrypt, prêt à brancher sur votre domaine.
+> Pas un tutoriel. Un point de départ opérationnel, documenté étape par étape.
+
+---
+
+## Le nom
+
+**K** comme Kouba. **ORE** comme *core* — le socle.
+
+Ce n'est pas un acronyme inventé après coup. Le nom est venu naturellement : une identité derrière, une philosophie devant. Construire des fondations solides avant de construire des fonctionnalités. Penser architecture avant code.
+
+**KORE** est un écosystème de socles open source, destiné à la communauté.
+
+---
+
+## L'écosystème KORE
+
+Chaque brique suit la même logique : extraite ou construite sur une base réelle, documentée, testée, utile.
+
+| Brique | Description | Statut |
+|---|---|---|
+| [kore-hexagonal](https://github.com/alak8ba/kore-hexagonal) | Architecture hexagonale • 1,5 an de production réelle • 658 commits | Disponible |
+| [kore-batch](https://github.com/alak8ba/kore-batch) | Traitement batch • plusieurs années de production • fort volume de données | Disponible |
+| [kore-genie](https://github.com/alak8ba/kore-genie) | Socle IA privée & RAG • déploiement on-premise • zéro donnée sortante | Disponible |
+| **[kore-n8n](https://github.com/alak8ba/kore-n8n)** | Automatisation self-hosted • n8n • Docker • Traefik • Let's Encrypt | Disponible |
+| kore-stream | Traitement de flux temps réel | Prévu |
+| kore-react | Composants frontend réutilisables | Prévu |
+
+---
+
+## Pourquoi ce projet existe
+
+n8n est l'un des outils d'automatisation les plus puissants du marché. Mais le déployer correctement — reverse proxy, TLS automatique, variables d'environnement, persistance des données — demande du temps et des choix.
+
+Ce socle extrait ces décisions une fois pour toutes. Il fournit un environnement Docker prêt à l'emploi, exposé via Traefik avec un certificat Let's Encrypt, entièrement configurable via un fichier `.env`.
 
 ---
 
 ## Stack
 
-| Component | Role |
-|-----------|------|
-| **n8n** | Workflow automation engine |
-| **Docker + Compose** | Container runtime |
-| **Traefik v2** | Reverse proxy, TLS termination (external) |
-| **Let's Encrypt** | Automatic SSL certificates (via Traefik) |
-| **SQLite** *(default)* | Embedded database · swap for PostgreSQL in production |
+| Couche | Technologie |
+|---|---|
+| Automatisation | n8n |
+| Runtime | Docker + Docker Compose |
+| Reverse proxy | Traefik v2 |
+| TLS | Let's Encrypt (via Traefik) |
+| Base de données | SQLite (défaut) • PostgreSQL (production) |
+| Configuration | Variables d'environnement (.env) |
 
 ---
 
-## Prerequisites
+## Construction • étape par étape
 
-- Linux VPS with Docker ≥ 24 and Docker Compose v2
-- Traefik v2 already running and attached to a Docker network named `traefik_public`
-- A domain (or subdomain) with a DNS A record pointing to your VPS
-- Traefik configured with a `letsencrypt` certificate resolver and a `websecure` entrypoint
+| # | Étape | Ce qu'on a construit |
+|---|---|---|
+| [01](docs/etape-01-infrastructure.md) | Infrastructure | VPS, Docker, réseau Traefik |
+| [02](docs/etape-02-docker-compose.md) | Docker Compose | Service n8n, volumes, configuration |
+| [03](docs/etape-03-traefik-tls.md) | Traefik & TLS | Labels, entrypoints, Let's Encrypt |
+| [04](docs/etape-04-env-secrets.md) | Variables & secrets | .env, encryption key, sécurité |
+| [05](docs/etape-05-premier-demarrage.md) | Premier démarrage | Vérification, logs, accès UI |
+| [06](docs/etape-06-postgres.md) | PostgreSQL | Migration SQLite → PostgreSQL |
+| [07](docs/etape-07-backup.md) | Backup | Sauvegarde du volume n8n_data |
+| [08](docs/etape-08-mise-a-jour.md) | Mise à jour | Stratégie de montée de version |
 
 ---
 
-## Installation
+## Démarrage rapide
 
-### 1. Clone the repository
+### Prérequis
+
+- VPS Linux avec Docker ≥ 24 et Docker Compose v2
+- Traefik v2 en place, attaché à un réseau Docker `traefik_public`
+- Un domaine avec un enregistrement DNS A pointant vers le VPS
+
+### Lancer le socle
 
 ```bash
-git clone https://github.com/<you>/kore-n8n.git
+git clone https://github.com/alak8ba/kore-n8n.git
 cd kore-n8n
-```
 
-### 2. Create your environment file
-
-```bash
+# Configurer l'environnement
 cp .env.example .env
-```
+# Éditer .env : N8N_HOST, WEBHOOK_URL, N8N_ENCRYPTION_KEY, timezone
 
-Edit `.env` and set at minimum:
-
-| Variable | Description |
-|----------|-------------|
-| `N8N_HOST` | Your subdomain, e.g. `n8n.yourdomain.com` |
-| `WEBHOOK_URL` | Full URL: `https://n8n.yourdomain.com/` |
-| `N8N_ENCRYPTION_KEY` | Random secret · generate with `openssl rand -hex 32` |
-| `GENERIC_TIMEZONE` | IANA timezone, e.g. `Europe/Paris` |
-
-> **Note:** `TRAEFIK_ENTRYPOINT` and `TRAEFIK_CERT_RESOLVER` must match the names defined in your Traefik static configuration.
-
-### 3. Ensure the Traefik network exists
-
-```bash
+# S'assurer que le réseau Traefik existe
 docker network create traefik_public 2>/dev/null || true
-```
 
-If your network has a different name, update `traefik_public` in `docker-compose.yml` and the `traefik.docker.network` label.
-
-### 4. Start the stack
-
-```bash
+# Démarrer
 docker compose up -d
 ```
 
-n8n is now accessible at `https://<N8N_HOST>`.
+n8n est accessible sur `https://<N8N_HOST>`.
 
 ---
 
-## Configuration
+## Structure du projet
 
-### Switching to PostgreSQL
-
-Set `DB_TYPE=postgresdb` in `.env` and fill in all `DB_POSTGRESDB_*` variables. Add a `postgres` service to `docker-compose.yml` if you want it co-located, or point to an external database.
-
-### Pinning the n8n version
-
-Set `N8N_VERSION` to a specific tag (e.g. `1.90.0`) to avoid unexpected upgrades:
-
-```env
-N8N_VERSION=1.90.0
 ```
-
-Available tags: https://hub.docker.com/r/n8nio/n8n/tags
-
-### SMTP / email
-
-Set `N8N_EMAIL_MODE=smtp` and configure the `N8N_SMTP_*` variables to enable password-reset emails and team invitations.
-
----
-
-## Operations
-
-### View logs
-
-```bash
-docker compose logs -f n8n
-```
-
-### Upgrade n8n
-
-```bash
-# Update the version pin in .env, then:
-docker compose pull
-docker compose up -d
-```
-
-### Backup
-
-The `n8n_data` Docker volume holds all workflows, credentials, and the SQLite database.
-
-```bash
-# One-shot backup to a local tar archive
-docker run --rm \
-  -v kore-n8n_n8n_data:/data \
-  -v $(pwd):/backup \
-  alpine tar czf /backup/n8n_backup_$(date +%F).tar.gz -C /data .
-```
-
-### Stop / remove
-
-```bash
-docker compose down          # stop, keep volumes
-docker compose down -v       # stop and delete volumes (destructive)
+kore-n8n/
+├── assets/
+│   └── logo-kore-n8n.svg       # Logo du socle
+├── docs/
+│   ├── etape-01-infrastructure.md
+│   ├── etape-02-docker-compose.md
+│   ├── etape-03-traefik-tls.md
+│   ├── etape-04-env-secrets.md
+│   ├── etape-05-premier-demarrage.md
+│   ├── etape-06-postgres.md
+│   ├── etape-07-backup.md
+│   └── etape-08-mise-a-jour.md
+├── docker-compose.yml           # Stack n8n + labels Traefik
+├── .env.example                 # Toutes les variables documentées
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-## Security checklist
+## Documentation
 
-- [ ] `N8N_ENCRYPTION_KEY` is set to a unique random value
-- [ ] `.env` is never committed (covered by `.gitignore`)
-- [ ] `N8N_BASIC_AUTH_ACTIVE=true` or user management is enabled before exposing publicly
-- [ ] n8n version is pinned to a specific tag
-- [ ] Regular backups of the `n8n_data` volume are in place
-- [ ] Traefik access logs are enabled on your VPS
+Voir [`docs/`](docs/) pour le détail de chaque étape.
 
 ---
 
-## License
+## Licence
 
-MIT
+MIT — voir [LICENSE](LICENSE).
