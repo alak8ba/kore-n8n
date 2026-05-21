@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg-n8n" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f0a10"/>
+      <stop offset="100%" style="stop-color:#0d0408"/>
+    </linearGradient>
+    <linearGradient id="orange-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EA4B71"/>
+      <stop offset="100%" style="stop-color:#b5234a"/>
+    </linearGradient>
+    <filter id="glow-orange">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fond hexagonal -->
+  <polygon points="100,8 178,52 178,148 100,192 22,148 22,52"
+           fill="url(#bg-n8n)" stroke="#EA4B71" stroke-width="2"/>
+
+  <!-- Hexagone intérieur décoratif -->
+  <polygon points="100,28 162,63 162,137 100,172 38,137 38,63"
+           fill="none" stroke="#EA4B71" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Nœuds du workflow -->
+  <!-- Nœud gauche (input) -->
+  <circle cx="68" cy="88" r="9" fill="#EA4B71" opacity="0.15"/>
+  <circle cx="68" cy="88" r="5" fill="#EA4B71" filter="url(#glow-orange)"/>
+
+  <!-- Nœud central -->
+  <circle cx="100" cy="88" r="11" fill="#EA4B71" opacity="0.15"/>
+  <circle cx="100" cy="88" r="6" fill="#EA4B71" filter="url(#glow-orange)"/>
+
+  <!-- Nœud droit haut (output 1) -->
+  <circle cx="132" cy="72" r="9" fill="#EA4B71" opacity="0.15"/>
+  <circle cx="132" cy="72" r="5" fill="#EA4B71" filter="url(#glow-orange)"/>
+
+  <!-- Nœud droit bas (output 2) -->
+  <circle cx="132" cy="104" r="9" fill="#EA4B71" opacity="0.15"/>
+  <circle cx="132" cy="104" r="5" fill="#EA4B71" filter="url(#glow-orange)"/>
+
+  <!-- Connexions avec flèches -->
+  <!-- input → central -->
+  <line x1="77" y1="88" x2="89" y2="88"
+        stroke="#EA4B71" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+  <polygon points="89,84 94,88 89,92"
+           fill="#EA4B71" opacity="0.8"/>
+
+  <!-- central → output haut -->
+  <line x1="107" y1="83" x2="123" y2="75"
+        stroke="#EA4B71" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+  <polygon points="121,70 127,75 120,77"
+           fill="#EA4B71" opacity="0.8"/>
+
+  <!-- central → output bas -->
+  <line x1="107" y1="93" x2="123" y2="101"
+        stroke="#EA4B71" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+  <polygon points="121,99 127,104 120,106"
+           fill="#EA4B71" opacity="0.8"/>
+
+  <!-- Texte KORE -->
+  <text x="100" y="148" text-anchor="middle"
+        font-family="'JetBrains Mono', monospace" font-weight="700"
+        font-size="20" fill="#EA4B71" letter-spacing="3">KORE</text>
+
+  <!-- Texte N8N -->
+  <text x="100" y="166" text-anchor="middle"
+        font-family="'JetBrains Mono', monospace" font-weight="400"
+        font-size="11" fill="#EA4B71" opacity="0.6" letter-spacing="5">N8N</text>
+</svg>
